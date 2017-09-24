@@ -3,19 +3,14 @@ package com.stripe.herringbone.test
 import com.stripe.herringbone.flatten.{FlatConverter,TypeFlattener}
 
 import org.scalatest._
-import org.apache.hadoop.fs.Path
 
-import parquet.example.Paper
-import parquet.example.data.simple.SimpleGroup
-import parquet.example.data.GroupWriter
-import parquet.schema.MessageType
-import parquet.schema.PrimitiveType
-import parquet.schema.Type.Repetition.OPTIONAL
-import parquet.schema.Type.Repetition.REQUIRED
-import parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-
-import scala.collection.mutable.StringBuilder
-import java.io.StringWriter
+import org.apache.parquet.example.Paper
+import org.apache.parquet.example.data.simple.SimpleGroup
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Type.Repetition.OPTIONAL
+import org.apache.parquet.schema.Type.Repetition.REQUIRED
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
 
 class FlatConverterTest extends FlatSpec with Matchers {
 

@@ -1,19 +1,17 @@
 package com.stripe.herringbone.load
 
 import com.stripe.herringbone.util.ParquetUtils
-
 import org.apache.hadoop.fs._
-
-import parquet.schema.{ PrimitiveType, Type }
-import parquet.schema.PrimitiveType.PrimitiveTypeName
-import parquet.schema.PrimitiveType.PrimitiveTypeName._
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName._
+import org.apache.parquet.schema.{PrimitiveType, Type}
 
 import scala.collection.JavaConversions._
 
 case class FieldUtils(hadoopFs: HadoopFs, schemaTypeMapper: SchemaTypeMapper) {
   def findPartitionFields(path: Path) = {
     hadoopFs.findPartitions(path).map {
-      case (name, example) if (example.forall{_.isDigit}) =>
+      case (name, example) if (example.forall { _.isDigit }) =>
         "`%s` int".format(name)
       case (name, _) =>
         "`%s` string".format(name)
@@ -27,10 +25,15 @@ case class FieldUtils(hadoopFs: HadoopFs, schemaTypeMapper: SchemaTypeMapper) {
 
   def tableFieldsFromSchemaFields(fields: Seq[Type]) = {
     fields
-      .filter { f => f.isPrimitive }
+      .filter { f =>
+        f.isPrimitive
+      }
       .map { f =>
-        "`%s` %s".format(f.getName, schemaTypeMapper.getSchemaType(f.asInstanceOf[PrimitiveType].getPrimitiveTypeName))
-      }.toList
+        "`%s` %s".format(f.getName,
+                         schemaTypeMapper.getSchemaType(
+                           f.asInstanceOf[PrimitiveType].getPrimitiveTypeName))
+      }
+      .toList
   }
 }
 
@@ -41,12 +44,12 @@ trait SchemaTypeMapper {
 object ImpalaHiveSchemaTypeMapper extends SchemaTypeMapper {
   def getSchemaType(pt: PrimitiveTypeName) = {
     pt match {
-      case BINARY => "STRING"
-      case INT32 => "INT"
-      case INT64 | INT96 => "BIGINT"
-      case DOUBLE => "DOUBLE"
-      case BOOLEAN => "BOOLEAN"
-      case FLOAT => "FLOAT"
+      case BINARY               => "STRING"
+      case INT32                => "INT"
+      case INT64 | INT96        => "BIGINT"
+      case DOUBLE               => "DOUBLE"
+      case BOOLEAN              => "BOOLEAN"
+      case FLOAT                => "FLOAT"
       case FIXED_LEN_BYTE_ARRAY => "BINARY"
     }
   }

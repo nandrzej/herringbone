@@ -1,10 +1,8 @@
 package com.stripe.herringbone.util
 
 import org.apache.hadoop.conf._
-import org.apache.hadoop.util._
 import org.apache.hadoop.fs._
-
-import parquet.hadoop.ParquetFileReader
+import org.apache.parquet.hadoop.ParquetFileReader
 
 object ParquetUtils {
   def getParquetMetadata(path: Path) = {
@@ -15,7 +13,8 @@ object ParquetUtils {
     val parquetFileStatuses = fs.listStatus(path, parquetFilter)
     val representativeParquetPath = parquetFileStatuses.head.getPath
 
-    val footers = ParquetFileReader.readFooters(new Configuration, representativeParquetPath)
+    val footers = ParquetFileReader.readFooters(new Configuration,
+                                                representativeParquetPath)
     footers.get(0).getParquetMetadata
   }
 

@@ -1,24 +1,21 @@
 package com.stripe.herringbone
 
-import com.stripe.herringbone.flatten.{ParquetFlatConf,ParquetFlatMapper,TypeFlattener}
-import com.stripe.herringbone.flatten.FlatConverter
+import com.stripe.herringbone.flatten.{
+  FlatConverter,
+  ParquetFlatConf,
+  ParquetFlatMapper,
+  TypeFlattener
+}
 import com.stripe.herringbone.util.ParquetUtils
-
+import org.apache.hadoop.conf._
+import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 import org.apache.hadoop.mapreduce.lib.output._
 import org.apache.hadoop.util._
-import org.apache.hadoop.fs._
-import org.apache.hadoop.conf._
-
-import parquet.example.data._
-import parquet.example.data.simple._
-import parquet.hadoop._
-import parquet.hadoop.example._
-import parquet.io.api._
-import parquet.schema._
-
-import org.rogach.scallop._
+import org.apache.parquet.example.data._
+import org.apache.parquet.hadoop._
+import org.apache.parquet.hadoop.example._
 
 class FlattenMapper extends ParquetFlatMapper[Group] {
   def valueOut(value: Group) = {
@@ -31,9 +28,10 @@ class FlattenJob extends Configured with Tool {
     val conf = new ParquetFlatConf(args)
     val fs = FileSystem.get(getConf)
     val inputPath = new Path(conf.inputPath())
-    val outputPathString = conf.outputPath.get.getOrElse(conf.inputPath().stripSuffix("/").concat("-flat"))
+    val outputPathString = conf.outputPath.get
+      .getOrElse(conf.inputPath().stripSuffix("/").concat("-flat"))
     val outputPath = new Path(outputPathString)
-    val previousPath = conf.previousPath.get.map{new Path(_)}
+    val previousPath = conf.previousPath.get.map { new Path(_) }
 
     val separator = conf.separator()
     getConf.set(ParquetFlatMapper.SeparatorKey, separator)
@@ -66,8 +64,10 @@ class FlattenJob extends Configured with Tool {
     job.setMapperClass(classOf[FlattenMapper])
     job.setJarByClass(classOf[FlattenJob])
     job.getConfiguration.setBoolean("mapreduce.job.user.classpath.first", true)
-    job.getConfiguration.setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, false)
-    job.getConfiguration.setBoolean(ParquetInputFormat.TASK_SIDE_METADATA, false);
+    job.getConfiguration
+      .setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, false)
+    job.getConfiguration
+      .setBoolean(ParquetInputFormat.TASK_SIDE_METADATA, false);
     job.setNumReduceTasks(0)
 
     if (job.waitForCompletion(true)) 0 else 1

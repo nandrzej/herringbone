@@ -1,20 +1,11 @@
 package com.stripe.herringbone.flatten
 
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.lib.input._
-import org.apache.hadoop.mapreduce.lib.output._
-import org.apache.hadoop.util._
-import org.apache.hadoop.fs._
-import org.apache.hadoop.conf._
+import org.apache.parquet.example.data._
+import org.apache.parquet.io.api._
+import org.apache.parquet.schema._
 
-import parquet.example.data._
-import parquet.example.data.simple._
-import parquet.hadoop._
-import parquet.hadoop.example._
-import parquet.io.api._
-import parquet.schema._
-
-class FlatConsumer(output: Group, separator: String, renameId: Boolean) extends RecordConsumer {
+class FlatConsumer(output: Group, separator: String, renameId: Boolean)
+    extends RecordConsumer {
 
   case class StackFrame(field: String, var values: List[Binary])
   var stack = List[StackFrame]()
@@ -34,15 +25,14 @@ class FlatConsumer(output: Group, separator: String, renameId: Boolean) extends 
 
   def endField(field: String, index: Int) {
     if (stack.head.values.size == 1) {
-      withField{name => output.add(name, stack.head.values.head)}
+      withField { name =>
+        output.add(name, stack.head.values.head)
+      }
     } else if (stack.head.values.size > 1) {
-      withField {name =>
+      withField { name =>
         val joined = Binary.fromString(
-          stack
-            .head
-            .values
-            .reverse
-            .map{_.toStringUsingUTF8}
+          stack.head.values.reverse
+            .map { _.toStringUsingUTF8 }
             .mkString(",")
             .replace("\t", " ")
         )
@@ -54,15 +44,21 @@ class FlatConsumer(output: Group, separator: String, renameId: Boolean) extends 
   }
 
   def addInteger(value: Int) {
-    writeField{Binary.fromString(value.toString)}{name => output.add(name, value)}
+    writeField { Binary.fromString(value.toString) } { name =>
+      output.add(name, value)
+    }
   }
 
   def addLong(value: Long) {
-    writeField{Binary.fromString(value.toString)}{name => output.add(name, value)}
+    writeField { Binary.fromString(value.toString) } { name =>
+      output.add(name, value)
+    }
   }
 
   def addBoolean(value: Boolean) {
-    writeField{Binary.fromString(value.toString)}{name => output.add(name, value)}
+    writeField { Binary.fromString(value.toString) } { name =>
+      output.add(name, value)
+    }
   }
 
   def truncate(value: Binary, length: Integer): Binary = {
@@ -78,32 +74,41 @@ class FlatConsumer(output: Group, separator: String, renameId: Boolean) extends 
   def addBinary(value: Binary) {
     // Truncate strings so Impala doesn't break
     val truncated = truncate(value, MaxStringBytes)
-    writeField(truncated){name => output.add(name, truncated)}
+    writeField(truncated) { name =>
+      output.add(name, truncated)
+    }
   }
 
   def addFloat(value: Float) {
-    writeField{Binary.fromString(value.toString)}{name => output.add(name, value)}
+    writeField { Binary.fromString(value.toString) } { name =>
+      output.add(name, value)
+    }
   }
 
   def addDouble(value: Double) {
-    writeField{Binary.fromString(value.toString)}{name => output.add(name, value)}
+    writeField { Binary.fromString(value.toString) } { name =>
+      output.add(name, value)
+    }
   }
 
-  def withField(fn: String=>Unit) {
-    val path = if (TypeFlattener.omitIdField(stack.head.field, stack.size, renameId))
-      stack.tail
-    else
-      stack
+  def withField(fn: String => Unit) {
+    val path =
+      if (TypeFlattener.omitIdField(stack.head.field, stack.size, renameId))
+        stack.tail
+      else
+        stack
 
-    val name = path.reverse.map{_.field}.mkString(separator)
-    if(output.getType.containsField(name))
+    val name = path.reverse.map { _.field }.mkString(separator)
+    if (output.getType.containsField(name))
       fn(name)
   }
 
-  def writeField(binRep: =>Binary)(fn: String => Unit) {
-    withField{name =>
+  def writeField(binRep: => Binary)(fn: String => Unit) {
+    withField { name =>
       val fieldType = output.getType.getType(name)
-      if(fieldType.asInstanceOf[PrimitiveType].getPrimitiveTypeName == PrimitiveType.PrimitiveTypeName.BINARY)
+      if (fieldType
+            .asInstanceOf[PrimitiveType]
+            .getPrimitiveTypeName == PrimitiveType.PrimitiveTypeName.BINARY)
         stack.head.values ::= binRep
       else
         fn(name)

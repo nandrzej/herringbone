@@ -4,14 +4,14 @@ import com.stripe.herringbone.flatten.TypeFlattener
 
 import org.scalatest._
 
-import parquet.schema.GroupType
-import parquet.schema.MessageType
-import parquet.schema.PrimitiveType
-import parquet.schema.Type.Repetition.OPTIONAL
-import parquet.schema.Type.Repetition.REPEATED
-import parquet.schema.Type.Repetition.REQUIRED
-import parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
-import parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
+import org.apache.parquet.schema.GroupType
+import org.apache.parquet.schema.MessageType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Type.Repetition.OPTIONAL
+import org.apache.parquet.schema.Type.Repetition.REPEATED
+import org.apache.parquet.schema.Type.Repetition.REQUIRED
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64
 
 class TypeFlattenerTest extends FlatSpec with Matchers {
 
